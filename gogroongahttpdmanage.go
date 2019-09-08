@@ -15,6 +15,7 @@ var (
 
 type Response struct {
 	Header Header
+    Body interface{}
 }
 type Header struct {
 	ReturnCode                   int
@@ -37,6 +38,21 @@ type LocationInInput struct {
 	LineNumber    int
 	LineContent   string
 }
+type BodySelect struct{
+    NHits int
+    Columns []GroongaType
+    Records []interface{}
+}
+type GroongaType struct{
+    Name string
+    Type Type
+}
+
+type Type string
+const(
+    UInt32 = "UInt32"
+    ShortText = "ShortText"
+)
 
 func Initialize(scheme, host, port string) {
 	groonga = gogroongahttpd.Groonga{
@@ -143,6 +159,8 @@ func parse(res *http.Response) (r Response, err error) {
 
 		return
 	}(o.([]interface{})[0])
+
+    r.Body = o.([]interface{})[1]
 
 	return
 }
