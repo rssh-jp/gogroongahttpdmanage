@@ -15,7 +15,7 @@ var (
 
 type Response struct {
 	Header Header
-    Body interface{}
+	Body   interface{}
 }
 type Header struct {
 	ReturnCode                   int
@@ -38,20 +38,24 @@ type LocationInInput struct {
 	LineNumber    int
 	LineContent   string
 }
-type BodySelect struct{
-    NHits int
-    Columns []GroongaType
-    Records []interface{}
+type BodySelect struct {
+	SearchResults []SearchResult
 }
-type GroongaType struct{
-    Name string
-    Type Type
+type SearchResult struct {
+	NHits   int
+	Columns []GroongaType
+	Records []interface{}
+}
+type GroongaType struct {
+	Name string
+	Type Type
 }
 
 type Type string
-const(
-    UInt32 = "UInt32"
-    ShortText = "ShortText"
+
+const (
+	UInt32    = "UInt32"
+	ShortText = "ShortText"
 )
 
 func Initialize(scheme, host, port string) {
@@ -68,7 +72,14 @@ func Select(param string) (r Response, err error) {
 		return
 	}
 
-	return parse(res)
+	r, err = parse(res)
+	if err != nil || r.Header.ReturnCode < 0 {
+		return
+	}
+
+	r.Body = parseBodySelect(r.Body)
+
+	return r, err
 }
 
 func Load(param string, content io.Reader) (r Response, err error) {
@@ -110,57 +121,13 @@ func parse(res *http.Response) (r Response, err error) {
 
 	json.Unmarshal(resp, &o)
 
-	r.Header = func(header interface{}) (h Header) {
-		h.ReturnCode = arrayInterfaceToInt(header, 0)
-		h.UnixTimeWhenCommandIsStarted = arrayInterfaceToFloat64(header, 1)
-		h.ElapsedTime = arrayInterfaceToFloat64(header, 2)
+	r.Header = parseHeader(o.([]interface{})[0])
 
-		if h.ReturnCode >= 0 {
-			return
-		}
-
-		if len(header.([]interface{})) < 3 {
-			return
-		}
-
-		h.ErrorMessage = arrayInterfaceToString(header, 3)
-
-		if len(header.([]interface{})) < 4 {
-			return
-		}
-
-		h.ErrorLocation = func(el interface{}) (e ErrorLocation) {
-			if len(el.([]interface{})) < 1 {
-				return
-			}
-
-			e.LocationInGroonga = func(lig interface{}) (l LocationInGroonga) {
-				l.FunctionName = arrayInterfaceToString(lig, 0)
-				l.SourceFileName = arrayInterfaceToString(lig, 1)
-				l.LineNumber = arrayInterfaceToInt(lig, 2)
-
-				return
-			}(el.([]interface{})[0])
-
-			if len(el.([]interface{})) < 2 {
-				return
-			}
-
-			e.LocationInInput = func(lii interface{}) (l LocationInInput) {
-				l.InputFileName = arrayInterfaceToString(lii, 0)
-				l.LineNumber = arrayInterfaceToInt(lii, 1)
-				l.LineContent = arrayInterfaceToString(lii, 2)
-
-				return
-			}(el.([]interface{})[1])
-
-			return
-		}(header.([]interface{})[4])
-
+	if r.Header.ReturnCode < 0 {
 		return
-	}(o.([]interface{})[0])
+	}
 
-    r.Body = o.([]interface{})[1]
+	r.Body = o.([]interface{})[1]
 
 	return
 }

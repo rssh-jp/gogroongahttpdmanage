@@ -1,7 +1,7 @@
 package gogroongahttpdmanage
 
 import (
-//	"bytes"
+	"bytes"
 	"flag"
 	"log"
 	"os"
@@ -27,42 +27,42 @@ func TestSelectSuccess(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	log.Println(res.Body)
+	log.Println(res)
 }
 
-//func TestSelectFailed(t *testing.T) {
-//	res, err := Select("table=Siten&filter=_id==1")
-//	if err != nil {
-//		t.Fatal(err)
-//	}
-//
-//	log.Println(res)
-//}
-//
-//func TestLoad(t *testing.T) {
-//	buf := bytes.NewBufferString(`{"_key":"nice","title":"good"}`)
-//	res, err := Load("table=Site", buf)
-//	if err != nil {
-//		t.Fatal(err)
-//	}
-//
-//	log.Println(res)
-//}
-//
-//func TestDelete(t *testing.T) {
-//	res, err := Delete(`table=Site&filter=_key=="nice"`)
-//	if err != nil {
-//		t.Fatal(err)
-//	}
-//
-//	log.Println(res)
-//}
-//
-//func TestStatus(t *testing.T) {
-//	res, err := Status()
-//	if err != nil {
-//		t.Fatal(err)
-//	}
-//
-//	log.Println(res)
-//}
+func TestSelectFailed(t *testing.T) {
+	res, err := Select("table=Siten&filter=_id==1")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	log.Println(res)
+}
+
+func TestLoad(t *testing.T) {
+	buf := bytes.NewBufferString(`{"_key":"nice","title":"good"}`)
+	res, err := Load("table=Site", buf)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	log.Println(res)
+}
+
+func TestDelete(t *testing.T) {
+	res, err := Delete(`table=Site&filter=_key=="nice"`)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	log.Println(res)
+}
+
+func TestStatus(t *testing.T) {
+	res, err := Status()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	log.Println(res)
+}
