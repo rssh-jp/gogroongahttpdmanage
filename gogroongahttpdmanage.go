@@ -109,6 +109,47 @@ func Status() (r Response, err error) {
 	return parse(res)
 }
 
+func CreateTable(tableParam string, columnParams []string) (r []Response, err error) {
+	r = make([]Response, 0, len(columnParams)+1)
+
+	res, err := groonga.CreateTable(tableParam)
+	if err != nil {
+		return
+	}
+
+	p, err := parse(res)
+	if err != nil {
+		return
+	}
+
+	r = append(r, p)
+
+	for _, columnParam := range columnParams {
+		res, err := groonga.CreateColumn(columnParam)
+		if err != nil {
+			return r, err
+		}
+
+		p, err := parse(res)
+		if err != nil {
+			return r, err
+		}
+
+		r = append(r, p)
+	}
+
+	return r, nil
+}
+
+func DeleteTable(param string) (r Response, err error) {
+	res, err := groonga.DeleteTable(param)
+	if err != nil {
+		return
+	}
+
+	return parse(res)
+}
+
 func parse(res *http.Response) (r Response, err error) {
 	defer res.Body.Close()
 
@@ -127,7 +168,9 @@ func parse(res *http.Response) (r Response, err error) {
 		return
 	}
 
-	r.Body = o.([]interface{})[1]
+	if len(o.([]interface{})) >= 2 {
+		r.Body = o.([]interface{})[1]
+	}
 
 	return
 }
