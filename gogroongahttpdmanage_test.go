@@ -7,6 +7,10 @@ import (
 	"testing"
 )
 
+var (
+	groonga *Groonga
+)
+
 func preprocess() {
 	tableParam := "name=testgrn&key_type=Int32"
 	columnParams := []string{
@@ -14,7 +18,7 @@ func preprocess() {
 		"table=testgrn&name=age&flags=COLUMN_SCALAR&type=Int8",
 	}
 
-	_, err := CreateTable(tableParam, columnParams)
+	_, err := groonga.CreateTable(tableParam, columnParams)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -27,14 +31,14 @@ func preprocess() {
         ]
     `
 
-	_, err = Load("table=testgrn", bytes.NewBufferString(data))
+	_, err = groonga.Load("table=testgrn", bytes.NewBufferString(data))
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 func postprocess() {
-	_, err := DeleteTable("name=testgrn")
+	_, err := groonga.DeleteTable("name=testgrn")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -48,7 +52,7 @@ func TestMain(m *testing.M) {
 	flag.StringVar(&port, "port", "10041", "Specify port")
 	flag.Parse()
 
-	Initialize(scheme, host, port)
+	groonga = New(scheme, host, port)
 
 	preprocess()
 
@@ -58,7 +62,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestSelectSuccess(t *testing.T) {
-	res, err := Select("table=testgrn&filter=_id<5")
+	res, err := groonga.Select("table=testgrn&filter=_id<5")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -105,7 +109,7 @@ func TestSelectSuccess(t *testing.T) {
 }
 
 func TestSelectFailed(t *testing.T) {
-	res, err := Select("table=Siten&filter=_id==1")
+	res, err := groonga.Select("table=Siten&filter=_id==1")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -127,7 +131,7 @@ func TestSelectFailed(t *testing.T) {
 
 func TestLoad(t *testing.T) {
 	buf := bytes.NewBufferString(`{"_key":4,"name":"ddd","age":40}`)
-	res, err := Load("table=testgrn", buf)
+	res, err := groonga.Load("table=testgrn", buf)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -138,7 +142,7 @@ func TestLoad(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	res, err := Delete(`table=testgrn&filter=_key==4`)
+	res, err := groonga.Delete(`table=testgrn&filter=_key==4`)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -149,7 +153,7 @@ func TestDelete(t *testing.T) {
 }
 
 func TestStatus(t *testing.T) {
-	res, err := Status()
+	res, err := groonga.Status()
 	if err != nil {
 		t.Fatal(err)
 	}

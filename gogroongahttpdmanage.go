@@ -9,10 +9,6 @@ import (
 	"github.com/rssh-jp/gogroongahttpd"
 )
 
-var (
-	groonga gogroongahttpd.Groonga
-)
-
 type Response struct {
 	Header Header
 	Body   interface{}
@@ -58,16 +54,22 @@ const (
 	ShortText = "ShortText"
 )
 
-func Initialize(scheme, host, port string) {
-	groonga = gogroongahttpd.Groonga{
-		Scheme: scheme,
-		Host:   host,
-		Port:   port,
+type Groonga struct {
+	groonga gogroongahttpd.Groonga
+}
+
+func New(scheme, host, port string) *Groonga {
+	return &Groonga{
+		groonga: gogroongahttpd.Groonga{
+			Scheme: scheme,
+			Host:   host,
+			Port:   port,
+		},
 	}
 }
 
-func Select(param string) (r Response, err error) {
-	res, err := groonga.Select(param)
+func (g Groonga) Select(param string) (r Response, err error) {
+	res, err := g.groonga.Select(param)
 	if err != nil {
 		return
 	}
@@ -82,8 +84,8 @@ func Select(param string) (r Response, err error) {
 	return r, err
 }
 
-func Load(param string, content io.Reader) (r Response, err error) {
-	res, err := groonga.Load(param, content)
+func (g Groonga) Load(param string, content io.Reader) (r Response, err error) {
+	res, err := g.groonga.Load(param, content)
 	if err != nil {
 		return
 	}
@@ -91,8 +93,8 @@ func Load(param string, content io.Reader) (r Response, err error) {
 	return parse(res)
 }
 
-func Delete(param string) (r Response, err error) {
-	res, err := groonga.Delete(param)
+func (g Groonga) Delete(param string) (r Response, err error) {
+	res, err := g.groonga.Delete(param)
 	if err != nil {
 		return
 	}
@@ -100,8 +102,8 @@ func Delete(param string) (r Response, err error) {
 	return parse(res)
 }
 
-func Status() (r Response, err error) {
-	res, err := groonga.Status()
+func (g Groonga) Status() (r Response, err error) {
+	res, err := g.groonga.Status()
 	if err != nil {
 		return
 	}
@@ -109,10 +111,10 @@ func Status() (r Response, err error) {
 	return parse(res)
 }
 
-func CreateTable(tableParam string, columnParams []string) (r []Response, err error) {
+func (g Groonga) CreateTable(tableParam string, columnParams []string) (r []Response, err error) {
 	r = make([]Response, 0, len(columnParams)+1)
 
-	res, err := groonga.CreateTable(tableParam)
+	res, err := g.groonga.CreateTable(tableParam)
 	if err != nil {
 		return
 	}
@@ -125,7 +127,7 @@ func CreateTable(tableParam string, columnParams []string) (r []Response, err er
 	r = append(r, p)
 
 	for _, columnParam := range columnParams {
-		res, err := groonga.CreateColumn(columnParam)
+		res, err := g.groonga.CreateColumn(columnParam)
 		if err != nil {
 			return r, err
 		}
@@ -141,8 +143,8 @@ func CreateTable(tableParam string, columnParams []string) (r []Response, err er
 	return r, nil
 }
 
-func DeleteTable(param string) (r Response, err error) {
-	res, err := groonga.DeleteTable(param)
+func (g Groonga) DeleteTable(param string) (r Response, err error) {
+	res, err := g.groonga.DeleteTable(param)
 	if err != nil {
 		return
 	}
