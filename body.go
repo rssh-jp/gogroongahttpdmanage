@@ -25,7 +25,7 @@ func parseBodySelect(body interface{}) (bs BodySelect) {
 		}
 
 		// レコード
-		recordLen := len(o.([]interface{})[2].([]interface{}))
+		recordLen := len(o.([]interface{})) - 2
 		sr.Records = make([]interface{}, 0, recordLen)
 		for i := 0; i < recordLen; i++ {
 			index := i + 2
